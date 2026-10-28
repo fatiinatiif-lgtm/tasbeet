@@ -24,17 +24,4 @@ jobs:
           cp -r src/lib app/lib
           cp -r src/assets app/assets
           mkdir -p app/assets/fonts
-          curl -fsSL "https://raw.githubusercontent.com/google/fonts/main/ofl/arefruqaa/ArefRuqaa-Bold.ttf" -o app/assets/fonts/ArefRuqaa-Bold.ttf || curl -fsSL "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/arefruqaa/ArefRuqaa-Bold.ttf" -o app/assets/fonts/ArefRuqaa-Bold.ttf
-          ls -la app/assets/fonts
-          cp src/pubspec.yaml app/pubspec.yaml
-          sed -i 's/android:label="[^"]*"/android:label="حفظ"/' app/android/app/src/main/AndroidManifest.xml
-      - name: Build
-        working-directory: app
-        run: |
-          flutter pub get
-          dart run flutter_launcher_icons
-          flutter build apk --release
-      - uses: actions/upload-artifact@v4
-        with:
-          name: hifz-apk
-          path: app/build/app/outputs/flutter-apk/app-release.apk
+          curl -fsSL "https://raw.githubusercontent.com/google/fonts/main/ofl/arefruqaa/ArefRuqaa-Bold.ttf" -o app/assets/fonts/ArefRuqaa-Bold.ttf || curl -fsSL "https://cdn.jsd
