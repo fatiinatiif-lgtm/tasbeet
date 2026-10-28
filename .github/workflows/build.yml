@@ -22,12 +22,14 @@ jobs:
           flutter create --org com.hifz --project-name hifz --platforms=android app
           rm -rf app/lib
           cp -r src/lib app/lib
+          cp -r src/assets app/assets
           cp src/pubspec.yaml app/pubspec.yaml
           sed -i 's/android:label="[^"]*"/android:label="حفظ"/' app/android/app/src/main/AndroidManifest.xml
       - name: Build
         working-directory: app
         run: |
           flutter pub get
+          dart run flutter_launcher_icons
           flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
