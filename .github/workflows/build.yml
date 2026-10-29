@@ -25,7 +25,21 @@ jobs:
           cp -r src/assets app/assets
           mkdir -p app/assets/fonts
           curl -fsSL https://raw.githubusercontent.com/google/fonts/main/ofl/arefruqaa/ArefRuqaa-Bold.ttf -o app/assets/fonts/ArefRuqaa-Bold.ttf || curl -fsSL https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/arefruqaa/ArefRuqaa-Bold.ttf -o app/assets/fonts/ArefRuqaa-Bold.ttf
-          curl -fsSL https://raw.githubusercontent.com/google/fonts/main/ofl/amiriquran/AmiriQuran-Regular.ttf -o app/assets/fonts/AmiriQuran-Regular.ttf || curl -fsSL https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiriquran/AmiriQuran-Regular.ttf -o app/assets/fonts/AmiriQuran-Regular.ttf
+          # خطوط القراءة (إن تعذّر تحميل أحدها يُستبدل بخط أميري قرآن حتى لا يفشل البناء)
+          getfont() {
+            rm -f "app/assets/fonts/$2"
+            curl -fsSL "https://raw.githubusercontent.com/google/fonts/main/ofl/$1/$2" -o "app/assets/fonts/$2" \
+              || curl -fsSL "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/$1/$2" -o "app/assets/fonts/$2" \
+              || rm -f "app/assets/fonts/$2"
+          }
+          getfont amiriquran AmiriQuran-Regular.ttf
+          getfont amiri Amiri-Regular.ttf
+          getfont scheherazadenew ScheherazadeNew-Regular.ttf
+          getfont lateef Lateef-Regular.ttf
+          [ -s app/assets/fonts/AmiriQuran-Regular.ttf ] || cp app/assets/fonts/ArefRuqaa-Bold.ttf app/assets/fonts/AmiriQuran-Regular.ttf
+          for f in Amiri-Regular ScheherazadeNew-Regular Lateef-Regular; do
+            [ -s app/assets/fonts/$f.ttf ] || cp app/assets/fonts/AmiriQuran-Regular.ttf app/assets/fonts/$f.ttf
+          done
           ls -la app/assets/fonts
           cp src/pubspec.yaml app/pubspec.yaml
           sed -i 's/android:label=\x22[^\x22]*\x22/android:label=\x22المصطفون\x22/' app/android/app/src/main/AndroidManifest.xml
