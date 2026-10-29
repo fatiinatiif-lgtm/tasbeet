@@ -25,6 +25,7 @@ jobs:
           cp -r src/assets app/assets
           mkdir -p app/assets/fonts
           curl -fsSL https://raw.githubusercontent.com/google/fonts/main/ofl/arefruqaa/ArefRuqaa-Bold.ttf -o app/assets/fonts/ArefRuqaa-Bold.ttf || curl -fsSL https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/arefruqaa/ArefRuqaa-Bold.ttf -o app/assets/fonts/ArefRuqaa-Bold.ttf
+          curl -fsSL https://raw.githubusercontent.com/google/fonts/main/ofl/amiriquran/AmiriQuran-Regular.ttf -o app/assets/fonts/AmiriQuran-Regular.ttf || curl -fsSL https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiriquran/AmiriQuran-Regular.ttf -o app/assets/fonts/AmiriQuran-Regular.ttf
           ls -la app/assets/fonts
           cp src/pubspec.yaml app/pubspec.yaml
           sed -i 's/android:label=\x22[^\x22]*\x22/android:label=\x22المصطفون\x22/' app/android/app/src/main/AndroidManifest.xml
