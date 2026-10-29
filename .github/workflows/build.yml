@@ -44,6 +44,34 @@ jobs:
           cp src/pubspec.yaml app/pubspec.yaml
           sed -i 's/android:label=\x22[^\x22]*\x22/android:label=\x22المصطفون\x22/' app/android/app/src/main/AndroidManifest.xml
           find app/android/app/src/main/res -name styles.xml -exec sed -i 's#<style name=\x22[A-Za-z]*Theme\x22.*>#&\n        <item name=\x22android:windowLayoutInDisplayCutoutMode\x22>shortEdges</item>#' {} +
+      - name: Add home screen widget (Android)
+        run: |
+          MAIN=$(find app/android/app/src/main -name MainActivity.kt | head -n 1)
+          KDIR=$(dirname "$MAIN")
+          PKG=$(grep -m1 '^package ' "$MAIN" | awk '{print $2}')
+          echo "package=$PKG dir=$KDIR"
+          RES=app/android/app/src/main/res
+          mkdir -p $RES/layout $RES/xml $RES/drawable
+          sed "s/__PKG__/$PKG/g" src/android_extra/WirdWidgetProvider.kt > "$KDIR/WirdWidgetProvider.kt"
+          cp src/android_extra/wird_widget.xml $RES/layout/wird_widget.xml
+          cp src/android_extra/wird_widget_info.xml $RES/xml/wird_widget_info.xml
+          cp src/android_extra/widget_bg.xml $RES/drawable/widget_bg.xml
+          python3 - "$PKG" <<'PY'
+          import sys
+          pkg = sys.argv[1]
+          p = 'app/android/app/src/main/AndroidManifest.xml'
+          s = open(p, encoding='utf-8').read()
+          r = ('    <receiver android:name="' + pkg + '.WirdWidgetProvider" android:exported="true">\n'
+               '        <intent-filter>\n'
+               '            <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>\n'
+               '        </intent-filter>\n'
+               '        <meta-data android:name="android.appwidget.provider" android:resource="@xml/wird_widget_info"/>\n'
+               '    </receiver>\n')
+          assert '</application>' in s
+          s = s.replace('</application>', r + '    </application>', 1)
+          open(p, 'w', encoding='utf-8').write(s)
+          PY
+          cat app/android/app/src/main/AndroidManifest.xml
       - name: Build
         working-directory: app
         run: |
