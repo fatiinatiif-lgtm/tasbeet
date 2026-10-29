@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [lite]
+        variant: [lite, notif]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -47,44 +47,22 @@ jobs:
           cp src/pubspec.yaml app/pubspec.yaml
           sed -i 's/android:label=\x22[^\x22]*\x22/android:label=\x22حياة بالقرآن\x22/' app/android/app/src/main/AndroidManifest.xml
           find app/android/app/src/main/res -name styles.xml -exec sed -i 's#<style name=\x22[A-Za-z]*Theme\x22.*>#&\n        <item name=\x22android:windowLayoutInDisplayCutoutMode\x22>shortEdges</item>#' {} +
-      - name: Lite variant (بدون ويدجت الشاشة الرئيسية)
-        if: matrix.variant == 'lite'
+      - name: Remove widget (all variants)
         run: |
-          sed -i '/home_widget:/d' app/pubspec.yaml
           cat > app/lib/core/home_widget_sync.dart <<'DART'
           import '../features/wird/wird_provider.dart';
 
           Future<void> syncHomeWidget(WirdState s) async {}
           DART
-      - name: Add home screen widget (Android)
-        if: matrix.variant == 'full'
-        run: |
-          MAIN=$(find app/android/app/src/main -name MainActivity.kt | head -n 1)
-          KDIR=$(dirname "$MAIN")
-          PKG=$(grep -m1 '^package ' "$MAIN" | awk '{print $2}')
-          echo "package=$PKG dir=$KDIR"
-          RES=app/android/app/src/main/res
-          mkdir -p $RES/layout $RES/xml $RES/drawable
-          sed "s/__PKG__/$PKG/g" src/android_extra/WirdWidgetProvider.kt > "$KDIR/WirdWidgetProvider.kt"
-          cp src/android_extra/wird_widget.xml $RES/layout/wird_widget.xml
-          cp src/android_extra/wird_widget_info.xml $RES/xml/wird_widget_info.xml
-          cp src/android_extra/widget_bg.xml $RES/drawable/widget_bg.xml
-          python3 - "$PKG" <<'PY'
-          import sys
-          pkg = sys.argv[1]
-          p = 'app/android/app/src/main/AndroidManifest.xml'
-          s = open(p, encoding='utf-8').read()
-          r = ('    <receiver android:name="' + pkg + '.WirdWidgetProvider" android:exported="true">\n'
-               '        <intent-filter>\n'
-               '            <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>\n'
-               '        </intent-filter>\n'
-               '        <meta-data android:name="android.appwidget.provider" android:resource="@xml/wird_widget_info"/>\n'
-               '    </receiver>\n')
-          assert '</application>' in s
-          s = s.replace('</application>', r + '    </application>', 1)
-          open(p, 'w', encoding='utf-8').write(s)
-          PY
-      - name: Android setup (Impeller off, notifications skipped)
+          if [ "${{ matrix.variant }}" = "notif" ]; then
+            sed -i 's/^  home_widget: .*/  flutter_local_notifications: ^17.2.4\n  timezone: ^0.9.4/' app/pubspec.yaml
+            cp src/android_extra/reminder_service_real.dart.txt app/lib/core/reminder_service.dart
+            rm -f src/android_extra/SKIP_NOTIFICATIONS
+          else
+            sed -i '/home_widget:/d' app/pubspec.yaml
+          fi
+          grep -n "home_widget\|notifications\|timezone" app/pubspec.yaml || true
+      - name: Android setup (Impeller off + notifications if enabled)
         run: python3 src/android_extra/setup_notifications.py
       - name: Show final manifest
         run: cat app/android/app/src/main/AndroidManifest.xml
