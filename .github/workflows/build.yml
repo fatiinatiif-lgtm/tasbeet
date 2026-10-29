@@ -28,6 +28,7 @@ jobs:
           ls -la app/assets/fonts
           cp src/pubspec.yaml app/pubspec.yaml
           sed -i 's/android:label=\x22[^\x22]*\x22/android:label=\x22المصطفون\x22/' app/android/app/src/main/AndroidManifest.xml
+          find app/android/app/src/main/res -name styles.xml -exec sed -i 's#<style name=\x22[A-Za-z]*Theme\x22.*>#&\n        <item name=\x22android:windowLayoutInDisplayCutoutMode\x22>shortEdges</item>#' {} +
       - name: Build
         working-directory: app
         run: |
